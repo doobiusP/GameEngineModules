@@ -1,0 +1,10 @@
+{
+  "dependencies": [
+    "freetype",
+    "glew",
+    "glfw3",
+    "glm",
+    "glog",
+    "boost-assert"
+  ]
+}
