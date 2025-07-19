@@ -2,7 +2,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include "common/stacktrace.h"
+#include "dbg/stacktrace.h"
 //#include <boost/assert.hpp>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -24,13 +24,6 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "{\n"
 "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
 "}\n\0";
-
-void foo() {
-    PRINT_STACKTRACE(google::GLOG_WARNING);
-}
-void bar() {
-    PRINT_STACKTRACE(google::GLOG_ERROR);
-}
 
 int main(int argc, char* argv[])
 {
@@ -57,12 +50,8 @@ int main(int argc, char* argv[])
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    LOG(INFO) << "hi! My name is Aaryan!\n";
-    PRINT_STACKTRACE(google::GLOG_INFO);
-    foo();
-    bar();
+    COLOR_LOG(WARNING, "Hi! My name is Aaryan");
     BOOST_ASSERT_MSG(1 == 1, "This should pass.");
-    BOOST_VERIFY_MSG(1 == 0, "This should not pass.");
     // glad: load all OpenGL function pointers
     // ---------------------------------------
     if (glewInit() != GLEW_OK) {
@@ -175,8 +164,7 @@ int main(int argc, char* argv[])
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     glfwTerminate();
-    google::ShutdownGoogleLogging();
-
+    DebugUtil::shutdown_glog();
     return 0;
 }
 

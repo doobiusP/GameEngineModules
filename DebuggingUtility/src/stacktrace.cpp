@@ -1,40 +1,12 @@
 #include "stacktrace.h"
 #include <dbghelp.h>
 #include <sstream>
-#include <iostream>
 #include <filesystem>
 
 #pragma comment(lib, "dbghelp.lib")
 
-const char* get_color(google::LogSeverity severity) {
-    switch (severity) {
-    case google::GLOG_INFO: return COLOR_WHITE;
-    case google::GLOG_WARNING: return COLOR_YELLOW;
-    case google::GLOG_ERROR: return COLOR_RED;
-    case google::GLOG_FATAL: return COLOR_RED;
-    default: return COLOR_WHITE;
-    }
-}
-
 namespace DebugUtil
 {
-    void setup_glog(const char* argv0)
-    {
-        // Get the directory of the executable
-        std::filesystem::path exe_path = std::filesystem::absolute(argv0).parent_path();
-        std::filesystem::path log_dir = exe_path / "logs";
-        std::filesystem::create_directories(log_dir);
-
-        google::InitGoogleLogging(argv0);
-
-        google::SetLogDestination(google::GLOG_INFO, (log_dir / "info_").string().c_str());
-        google::SetLogDestination(google::GLOG_WARNING, (log_dir / "warning_").string().c_str());
-        google::SetLogDestination(google::GLOG_ERROR, (log_dir / "error_").string().c_str());
-        google::SetLogDestination(google::GLOG_FATAL, (log_dir / "fatal_").string().c_str());
-
-        google::SetStderrLogging(google::GLOG_ERROR); // Change this to see minimum logs
-    }
-
     static std::string basename(const std::string& file)
     {
         size_t i = file.find_last_of("\\/");
@@ -131,7 +103,7 @@ namespace DebugUtil
     {
         auto stack = stack_trace();
         auto& usefulFrame = stack[1];
-        const char* sevColor = get_color(severity);
+        const char* sevColor = get_glog_color(severity);
 
         std::ostringstream oss;
         oss << "-----------STACKTRACE-----------\n"
@@ -150,7 +122,8 @@ namespace DebugUtil
         if (severity < FLAGS_stderrthreshold) {
             std::cout << oss.str();
         }
-        google::LogMessage(filename, line, severity).stream() << oss.str();
+        google::LogMessage(filename, line, severity).stream() << oss.str(); // Not using LOG() because want to pass in
+                                                                            // caller's filename and line.
         std::cout << COLOR_WHITE;
     }
 

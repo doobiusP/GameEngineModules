@@ -21,9 +21,15 @@
     <ClCompile Include="src\custom_assert.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\logging.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common\stacktrace.h">
+    <ClInclude Include="dbg\stacktrace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dbg\logging.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -17,7 +17,7 @@ namespace boost
 		std::cout << "[FILE]: " << file << '\n';
 		std::cout << "[LINE]: " << line << '\n';
 
-		PRINT_STACKTRACE(google::GLOG_FATAL);
+		PRINT_STACKTRACE(FATAL);
 	}
 }
 
