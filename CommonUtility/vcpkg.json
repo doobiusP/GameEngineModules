@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+    "nlohmann-json",
+    "glm",
+    "glog",
+    "boost-assert"
+  ]
+}

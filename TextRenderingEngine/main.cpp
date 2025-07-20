@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "dbg/stacktrace.h"
-//#include <boost/assert.hpp>
+#include "common/observer.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -28,6 +28,31 @@ const char* fragmentShaderSource = "#version 330 core\n"
 int main(int argc, char* argv[])
 {
     DebugUtil::setup_glog(argv[0]);
+
+    CommonUtil::Notification::Notifier<CommonUtil::Notification::ConfigNotifiee, json> initSetup("InitialGameConfig");
+    CommonUtil::Notification::Notifier<CommonUtil::Notification::ConfigNotifiee, int> randIntS("randomIntSource");
+
+    CommonUtil::Notification::ConfigNotifiee graphicsEngine("GraphicsEngine");
+
+    initSetup.addNotifiee(&graphicsEngine);
+    randIntS.addNotifiee(&graphicsEngine);
+    
+    json config = {
+        {"windowWidth", 1280},
+        {"windowHeight", 720},
+        {"fullscreen", false},
+        {"title", "OpenGL Renderer"},
+        {"vsync", true},
+        {"shaders", {
+            {"vertex", "basic.vert"},
+            {"fragment", "basic.frag"}
+        }}
+    };
+
+    initSetup.notifyAll(config);
+    int x = 5;
+    randIntS.notifyAll(x);
+
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
