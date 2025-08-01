@@ -1,0 +1,11 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "CommonUtilityTests\\CommonUtilityTests.vcxproj",
+        "Action": "StartWithoutDebugging"
+      }
+    ]
+  }
+]

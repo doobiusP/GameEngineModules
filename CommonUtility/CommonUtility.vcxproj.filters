@@ -18,12 +18,18 @@
     <ClCompile Include="src\observer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\code_timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\observer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="common\notification_types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="common\code_timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
