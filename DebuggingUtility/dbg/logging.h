@@ -1,25 +1,74 @@
 #pragma once
-#define GLOG_NO_ABBREVIATED_SEVERITIES
-#include <glog/logging.h>
+#include <string>
+#include <string_view>
+#include <source_location>
+#include <filesystem>
 
-#define BOOST_ENABLE_ASSERT_DEBUG_HANDLER
-#include <boost/assert.hpp>
+#include <boost/smart_ptr/shared_ptr.hpp>
+#include <boost/smart_ptr/make_shared_object.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/attributes.hpp>
+#include <boost/stacktrace/stacktrace.hpp>
 
-#include <iostream>
+#include <boost/log/trivial.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/sources/severity_channel_logger.hpp>
+#include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/sinks/sync_frontend.hpp>
+#include <boost/log/sinks/text_ostream_backend.hpp>
+#include <boost/log/attributes/scoped_attribute.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/manipulators/add_value.hpp>
 
-constexpr auto COLOR_RESET = "\033[0m";
-constexpr auto COLOR_RED = "\033[31m";
-constexpr auto COLOR_YELLOW = "\033[33m";
-constexpr auto COLOR_BLUE = "\033[34m";
-constexpr auto COLOR_WHITE = "\033[37m";
+namespace logging = boost::log;
+namespace src = boost::log::sources;
+namespace expr = boost::log::expressions;
+namespace sinks = boost::log::sinks;
+namespace attrs = boost::log::attributes;
+namespace keywords = boost::log::keywords;
+using severity_level = logging::trivial::severity_level;
 
-#define COLOR_LOG(SEV, MSG) \
-    std::cout << DebugUtil::get_glog_color(google::GLOG_##SEV); \
-    LOG(SEV) << MSG; \
-    std::cout << COLOR_WHITE;
+/**
+ * C in CLOG stands for custom
+ */
+#define DOOBIUS_CLOG(SEV) \
+	BOOST_LOG_TRIVIAL(severity_level::SEV) \
+	<< logging::add_value("Line", std::source_location::current().line()) \
+	<< logging::add_value("File", std::filesystem::path(std::source_location::current().file_name()).filename().string())
 
-namespace DebugUtil {
-    const char* get_glog_color(google::LogSeverity severity);
-    void setup_glog(const char* argv0);
-    void shutdown_glog();
-};
+#define DOOBIUS_CLOG_TAG(SEV, TAG) \
+	DOOBIUS_CLOG(SEV) \
+	<< logging::add_value("Tag", TAG)
+
+#define DOOBIUS_LOG(LOGGER, SEV) \
+	BOOST_LOG_SEV(LOGGER, severity_level::SEV) \
+	<< logging::add_value("Line", std::source_location::current().line()) \
+	<< logging::add_value("File", std::filesystem::path(std::source_location::current().file_name()).filename().string())
+
+#define DOOBIUS_LOG_TAG(LOGGER, SEV, TAG) \
+	DOOBIUS_LOG(LOGGER, SEV) \
+	<< logging::add_value("Tag", TAG)
+
+#define DOOBIUS_CLOG_STACKTRACE(SEV) \
+	{ \
+		BOOST_LOG_NAMED_SCOPE("Stacktrace"); \
+		DOOBIUS_CLOG(SEV) << boost::stacktrace::basic_stacktrace(); \
+	}
+
+namespace Dbg {
+	namespace Log {
+		using cLoggerRef = src::severity_logger< severity_level >;
+
+		/**
+		 * \brief Unused for now. Using the trivial logger with my own formatter for now. In case I start needing a custom
+		 * logger in the future, I can edit this one.
+		 */
+		cLoggerRef& getLogger();
+
+		src::severity_channel_logger_mt< severity_level, std::string > createSubsystemLogger(const std::string& subsystemName);
+
+		void initLogging(std::filesystem::path const& logDir);
+	}
+}

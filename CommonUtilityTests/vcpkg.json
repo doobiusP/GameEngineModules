@@ -3,6 +3,7 @@
     "boost-json",
     "boost-assert",
     "boost-log",
-    "boost-stacktrace"
+    "boost-stacktrace",
+    "boost-test"
   ]
 }
