@@ -1,7 +1,7 @@
 #pragma once
 #include <fstream>
-#include <nlohmann/json.hpp>
-using json = nlohmann::json;
+#include <boost/json.hpp>
+namespace json = boost::json;
 
 namespace CommonUtil {
 	namespace NotificationTypes {

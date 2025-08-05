@@ -2,7 +2,7 @@
 #include <fstream>
 
 #include <boost/core/null_deleter.hpp>
-
+#include <boost/log/sinks/text_ostream_backend.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/log/support/date_time.hpp>
 #include <boost/log/utility/setup/file.hpp>
@@ -47,6 +47,7 @@ namespace Dbg {
 			}
 		}
 
+		// TODO: Use $(ConfigurationName) instead.
 		const std::string& getConfigString() {
 #if defined(DBG_CONFIG)
 			static const std::string configStr = "dbg";
@@ -56,7 +57,7 @@ namespace Dbg {
 			static const std::string configStr = "rel";
 #else
 			static const std::string configStr;
-			assert(false && "Using non-standard build configuration");
+			static_assert(false && "Using non-standard build configuration");
 #endif
 			return configStr;
 		}
@@ -68,12 +69,7 @@ namespace Dbg {
 			int rotationSizeInMb = 10;
 		} logFileSetting;
 
-		/**
-		 * \brief Note that this function modifies the severity string in-place to become all lowercase.
-		 *
-		 * \param sevStr
-		 * \return
-		 */
+
 		severity_level parseSev(const std::string_view& sevStr) {
 			if (sevStr == "trace") {
 				return severity_level::trace;
@@ -94,7 +90,7 @@ namespace Dbg {
 				return severity_level::fatal;
 			}
 			else {
-				BOOST_LOG_TRIVIAL(info) << "Received invalid severity string = " << sevStr;
+				BOOST_LOG_TRIVIAL(warning) << "Received invalid severity string = " << sevStr;
 				assert(false && "Attempting to parse severity string not present in trivial::severity_level. Ensure all lowercase");
 				return severity_level::fatal;
 			}
@@ -102,15 +98,20 @@ namespace Dbg {
 
 		std::string getBuildEnvironmentString() {
 			std::string buildConfigStr = "Runtime Environment: [CONFIG = ";
-#if defined(DBG_CONFIG)
-			buildConfigStr += "DBG]";
-#elif defined(REL_DEV_CONFIG)
-			buildConfigStr += "REL-DEV]";
-#elif defined(REL_CONFIG)
-			buildConfigStr += "REL]";
-#else
-			buildConfigStr += "UNKNOWN]";
-#endif
+			auto& currConfigStr = getConfigString();
+			if (currConfigStr == "dbg") {
+				buildConfigStr += "DBG]";
+			}
+			else if (currConfigStr == "rel-dev") {
+				buildConfigStr += "REL-DEV]";
+			}
+			else if (currConfigStr == "rel") {
+				buildConfigStr += "REL]";
+			}
+			else {
+				buildConfigStr += "UNKNOWN]";
+			}
+
 			buildConfigStr += "[ARCHITECTURE = ";
 #if defined(_WIN64)
 			buildConfigStr += "x64]";
@@ -264,12 +265,6 @@ namespace Dbg {
 				keywords::filter = severity >= logFileSetting.minSeverity
 			);
 			DOOBIUS_CLOG(info) << "Finished setting up file sink";
-		}
-
-		cLoggerRef& Dbg::Log::getLogger()
-		{
-			static cLoggerRef _cLogger;
-			return _cLogger;
 		}
 
 		// TODO: Also accept some kind of module name so that you can have <config>_<module>_%N.log

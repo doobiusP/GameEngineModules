@@ -1,18 +1,8 @@
 {
   "dependencies": [
-    {
-      "name": "nlohmann-json"
-    },
-    {
-      "name": "glm"
-    },
-    {
-      "name": "boost-assert"
-    },
-    {
-      "name": "glog",
-      "default-features": false,
-      "features": []
-    }
+    "boost-json",
+    "boost-assert",
+    "boost-log",
+    "boost-stacktrace"
   ]
 }
