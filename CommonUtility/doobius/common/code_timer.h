@@ -1,7 +1,7 @@
 #pragma once
-#include "dbg/logging.h"
+#include "doobius/dbg/logging.h"
 
-namespace CommonUtil {
+namespace Doobius {
 	namespace Perf {
 		class CodeTimer {
 		private:

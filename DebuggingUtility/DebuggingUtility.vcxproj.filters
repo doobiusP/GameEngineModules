@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="dbg\logging.h">
+    <ClInclude Include="doobius\dbg\logging.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dbg\custom_assert.h">
+    <ClInclude Include="doobius\dbg\custom_assert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\observer.cpp">
+    <ClCompile Include="src\notif_registry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\code_timer.cpp">
@@ -23,13 +23,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common\observer.h">
+    <ClInclude Include="doobius\common\observer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common\notification_types.h">
+    <ClInclude Include="doobius\common\notif_registry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common\code_timer.h">
+    <ClInclude Include="doobius\common\code_timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

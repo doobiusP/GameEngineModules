@@ -1,6 +1,6 @@
-#include "code_timer.h"
+#include "doobius/common/code_timer.h"
 
-namespace CommonUtil {
+namespace Doobius {
 	namespace Perf {
 		CodeTimer::CodeTimer(const char* name) : m_timerName(name), m_start(std::chrono::high_resolution_clock::now()) {
 			BOOST_LOG_NAMED_SCOPE("Timing");

@@ -3,6 +3,10 @@
     "boost-json",
     "boost-assert",
     "boost-log",
-    "boost-stacktrace"
+    "boost-stacktrace",
+    "boost-bimap",
+    "boost-multi-index",
+    "boost-format",
+    "boost-uuid"
   ]
 }

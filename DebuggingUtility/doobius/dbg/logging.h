@@ -1,7 +1,5 @@
 #pragma once
-//TODO: Cleanup includes
 #include <string>
-#include <string_view>
 #include <source_location>
 #include <filesystem>
 
@@ -23,6 +21,21 @@ namespace sinks = boost::log::sinks;
 namespace attrs = boost::log::attributes;
 namespace keywords = boost::log::keywords;
 using severity_level = logging::trivial::severity_level;
+
+// Don't know how useful these defines are going to be, so I'll leave them here for now
+#if defined(_WIN32)
+#define DOOBIUS_WIN32
+#else
+#define DOOBIUS_WIN64
+#endif
+
+#if defined(_DEBUG)
+#define DOOBIUS_DEBUG
+#else
+#define DOOBIUS_NDEBUG
+#endif
+
+#define DOOBIUS_LOG_MNG() Doobius::Log::LogManager::get()
 
 /**
  * C in CLOG stands for custom
@@ -51,10 +64,32 @@ using severity_level = logging::trivial::severity_level;
 		DOOBIUS_CLOG(SEV) << boost::stacktrace::basic_stacktrace(); \
 	}
 
-namespace Dbg {
+namespace Doobius {
 	namespace Log {
-		src::severity_channel_logger_mt< severity_level, std::string > createSubsystemLogger(const std::string& subsystemName);
+		class LogManager {
+		private:
+			LogManager();
+			~LogManager() = default;
 
-		void initLogging(std::filesystem::path const& logDir);
+			const std::filesystem::path m_nameOfLogConfigFile;
+			std::filesystem::path m_fullLogDir;
+			bool m_setup;
+		public:
+			using ModuleLogger = src::severity_channel_logger_mt< severity_level, std::string >;
+
+			LogManager(const LogManager&) = delete;
+			LogManager& operator=(const LogManager&) = delete;
+			LogManager(LogManager&&) = delete;
+			LogManager& operator=(LogManager&&) = delete;
+
+			static LogManager& get();
+
+			void initLogging(const std::filesystem::path& logDir);
+
+			// TODO: Implement createSubsystemLogger
+			ModuleLogger createSubsystemLogger(const std::string& subsystemName) const;
+
+			inline const std::filesystem::path& getLogDir() const { return m_fullLogDir; }
+		};
 	}
 }

@@ -1,4 +1,4 @@
-#include "logging.h"
+#include "doobius/dbg/logging.h"
 #include <fstream>
 
 #include <boost/core/null_deleter.hpp>
@@ -20,7 +20,7 @@ BOOST_LOG_ATTRIBUTE_KEYWORD(timeline, "Timeline", attrs::timer::value_type)
 BOOST_LOG_ATTRIBUTE_KEYWORD(timestamp, "TimeStamp", boost::posix_time::ptime)
 BOOST_LOG_ATTRIBUTE_KEYWORD(thread_id, "ThreadID", boost::log::attributes::current_thread_id::value_type)
 
-namespace Dbg {
+namespace Doobius {
 	namespace Log {
 		class Terminal {
 		public:
@@ -47,13 +47,12 @@ namespace Dbg {
 			}
 		}
 
-		// TODO: Use $(ConfigurationName) instead.
 		const std::string& getConfigString() {
-#if defined(DBG_CONFIG)
+#if defined(Debug_CONFIG)
 			static const std::string configStr = "dbg";
-#elif defined(REL_DEV_CONFIG)
+#elif defined(ReleaseDev_CONFIG)
 			static const std::string configStr = "rel-dev";
-#elif defined(REL_CONFIG)
+#elif defined(Release_CONFIG)
 			static const std::string configStr = "rel";
 #else
 			static const std::string configStr;
@@ -66,7 +65,7 @@ namespace Dbg {
 			severity_level minSeverity = severity_level::trace;
 			severity_level minConsoleLogSeverity = severity_level::info;
 			std::string logFilePrefix = "default-dbg";
-			int rotationSizeInMb = 10;
+			__int64 rotationSizeInMb = 10;
 		} logFileSetting;
 
 
@@ -122,6 +121,7 @@ namespace Dbg {
 		}
 
 		void readSettingsFromJson(json::value const& logConfigJson) {
+			BOOST_LOG_NAMED_SCOPE("SettingsParse");
 			BOOST_LOG_TRIVIAL(info) << "Now reading configuration present in the config file...";
 			json::object const& root = logConfigJson.as_object();
 
@@ -155,7 +155,7 @@ namespace Dbg {
 			// Rotation Size (MB) of the log file
 			json::object const& rotationSize = root.at("rotation_size").as_object();
 			if (auto rotSizePtr = rotationSize.if_contains(getConfigString())) {
-				logFileSetting.rotationSizeInMb = rotSizePtr->as_int64(); // TODO: Compiler gives warning here due to narrowing conversion. Figure out a better way to do this.
+				logFileSetting.rotationSizeInMb = rotSizePtr->as_int64();
 			}
 			else {
 				BOOST_LOG_TRIVIAL(warning) << "Couldn't find rotation_size for config=" << getConfigString() << ". Using default.";
@@ -169,7 +169,7 @@ namespace Dbg {
 			strm << getSeverityColor(*rec[severity]);
 			strm << "<" << rec[severity] << "> ";
 
-			strm << "[" << rec[file] << ":" << rec[line] << "]"; // TODO: Make rec[line] and rec[file] default to "?" in case its not present
+			strm << "[" << rec[file] << ":" << rec[line] << "]";
 			strm << "[" << rec[thread_id] << "] ";
 
 			strm << "|";
@@ -196,7 +196,7 @@ namespace Dbg {
 			strm << "<" << rec[severity] << "> ";
 			strm << "[" << rec[line_id] << "]";
 
-			strm << "[" << rec[file] << ":" << rec[line] << "]"; // TODO: Make rec[line] and rec[file] default to "?" in case its not present
+			strm << "[" << rec[file] << ":" << rec[line] << "]";
 			strm << "[" << rec[thread_id] << "]";
 			auto ts = rec[timestamp];
 			strm << "[" << boost::posix_time::to_simple_string(*ts) << "] ";
@@ -221,6 +221,8 @@ namespace Dbg {
 
 		void setupConsoleSink()
 		{
+			BOOST_LOG_NAMED_SCOPE("SetupConsoleSink");
+
 			// I am aware add_console_log() exists but I'm doing this because I want to understand how making sinks works
 			typedef sinks::text_ostream_backend text_stream;
 			typedef sinks::synchronous_sink< text_stream > sink_t;
@@ -267,11 +269,22 @@ namespace Dbg {
 			DOOBIUS_CLOG(info) << "Finished setting up file sink";
 		}
 
-		// TODO: Also accept some kind of module name so that you can have <config>_<module>_%N.log
-		void initLogging(std::filesystem::path const& logDir)
+		LogManager::LogManager() : m_nameOfLogConfigFile{ "log_config.json" }, m_setup{ false } {}
+
+		LogManager& LogManager::get() {
+			static LogManager _logMng;
+			return _logMng;
+		}
+
+		void LogManager::initLogging(const std::filesystem::path& logDir)
 		{
-			const std::filesystem::path nameOfLogConfigFile = "log_config.json";
-			std::filesystem::path logConfigPath = PATH_TO_CONFIGS_DIR / nameOfLogConfigFile;
+			BOOST_LOG_NAMED_SCOPE("InitLogging");
+			if (m_setup) {
+				DOOBIUS_CLOG(warning) << "Attempting to initialize logging more than once";
+				return;
+			}
+
+			std::filesystem::path logConfigPath = PATH_TO_CONFIGS_DIR / m_nameOfLogConfigFile;
 
 			std::ifstream logConfigStream(logConfigPath);
 			if (logConfigStream.fail()) {
@@ -289,8 +302,10 @@ namespace Dbg {
 			// At this point, logFileSetting is valid and up-to-date
 			setupConsoleSink();
 			DOOBIUS_CLOG(info) << getBuildEnvironmentString();
-
 			setupFileSink(logDir);
+
+			m_fullLogDir = logDir;
+			m_setup = true;
 		}
 	}
 }

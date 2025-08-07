@@ -1,5 +1,5 @@
 #pragma once
-#include "custom_assert.h"
+#include "doobius/dbg/custom_assert.h"
 
 namespace boost
 {
@@ -18,6 +18,10 @@ namespace boost
 
 		DOOBIUS_CLOG(error) << assertOss.str();
 		DOOBIUS_CLOG_STACKTRACE(error);
+#if defined(_DEBUG)
+		__debugbreak();
+#endif // defined(_DEBUG)
+
 		std::abort();
 	}
 
@@ -34,6 +38,9 @@ namespace boost
 
 		DOOBIUS_CLOG(error) << assertOss.str();
 		DOOBIUS_CLOG_STACKTRACE(error);
+#if defined(_DEBUG)
+		__debugbreak();
+#endif // defined(_DEBUG)
 		std::abort();
 	}
 }
